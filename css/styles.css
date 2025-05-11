@@ -1,0 +1,641 @@
+body { 
+    margin: 0; 
+    padding: 0; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    min-height: 100vh; 
+    background-color: #222; 
+    font-family: 'MedievalSharp', Arial, sans-serif;
+}
+.game-container {
+    position: relative;
+    width: 1600px;
+    height: 800px;
+    margin: 0 auto;
+}
+#gameCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1600px;
+    height: 800px;
+    border: 2px solid #444;
+    background-color: #2a4d2a;  /* Darker green base color */
+}
+.ui-container {
+    position: absolute;
+    top: 10px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+    box-sizing: border-box;
+    font-family: 'MedievalSharp', Arial, sans-serif;
+}
+.shop-container {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: auto;
+    padding: 10px;
+    box-sizing: border-box;
+}
+.shop {
+    background-color: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: calc(8px + 0.5vw);
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
+}
+.shop-section {
+    margin-bottom: 10px;
+    padding: 5px;
+    border-radius: 3px;
+    background-color: rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    max-height: 500px;
+    position: relative;
+    z-index: 1;
+}
+.shop-section.collapsed {
+    max-height: 30px;
+    overflow: hidden;
+    padding: 0;
+}
+.shop-section-title {
+    text-align: center;
+    margin-bottom: 5px;
+    font-size: calc(10px + 0.5vw);
+    color: #88ff88;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    padding: 5px;
+    position: relative;
+    z-index: 1;
+}
+.shop-section-title::after {
+    content: '▼';
+    font-size: 0.8em;
+    transition: transform 0.3s ease;
+}
+.shop-section.collapsed .shop-section-title::after {
+    transform: rotate(-90deg);
+}
+.resources {
+    background-color: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: calc(10px + 0.7vw);
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+.base-health {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: calc(12px + 0.6vw);
+    text-align: center;
+    width: 250px;
+}
+.base-health .health-bar {
+    width: 100%;
+    height: 10px;
+    background-color: #333;
+    margin-top: 5px;
+    border-radius: 4px;
+    overflow: hidden;
+}
+.base-health .health-bar-fill {
+    height: 100%;
+    background-color: #33CC33;
+    transition: width 0.3s;
+}
+.player-base-health {
+    left: 10px;
+    top: 10px;
+}
+.enemy-base-health {
+    right: 10px;
+    top: 10px;
+    text-align: center;
+}
+.player-gold, .enemy-gold {
+    margin-top: 8px;
+    padding-top: 5px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+.gold-rate, .enemy-gold-rate {
+    font-size: calc(8px + 0.4vw);
+    color: #88ff88;
+    margin-top: 2px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+.miners-display {
+    display: flex;
+    gap: 4px;
+    margin-top: 3px;
+    justify-content: center;
+}
+.miner-slot {
+    width: 20px;
+    height: 20px;
+    border: 1px solid #666;
+    border-radius: 3px;
+    background: rgba(255, 255, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+.miner-icon {
+    font-size: 14px;
+    animation: bounce 1s infinite;
+}
+.miner-rate {
+    position: absolute;
+    bottom: -12px;
+    font-size: 8px;
+    color: #ffcc00;
+    font-weight: bold;
+    text-shadow: 0 0 3px black;
+}
+.vault-slot {
+    width: 20px;
+    height: 20px;
+    border: 1px solid #666;
+    border-radius: 3px;
+    background: rgba(0, 191, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.vault-icon {
+    font-size: 14px;
+    animation: bounce 1s infinite;
+}
+.shop-items {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    transition: opacity 0.3s ease;
+    position: relative;
+    z-index: 2;
+    justify-content: center; /* Center items */
+}
+.shop-section.collapsed .shop-items {
+    opacity: 0;
+    pointer-events: none;
+}
+.shop-item {
+    border: 1px solid #666;
+    padding: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    text-align: center;
+    position: relative;
+    width: 90px; /* Fixed width for all items */
+    height: 80px; /* Fixed height for all items */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 3;
+    background-color: rgba(0, 0, 0, 0.5); /* Consistent background */
+    border-radius: 4px; /* Slightly rounded corners */
+}
+.shop-item.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.shop-item-emoji {
+    font-size: calc(16px + 0.8vw);
+    display: block;
+    margin-bottom: 5px;
+    height: 32px; /* Fixed height for emoji area */
+}
+.shop-item-name {
+    font-weight: bold;
+    margin-bottom: 3px;
+}
+.shop-item-cost {
+    color: #FFCC00; /* Gold color for cost */
+}
+.shop-item.purchased {
+    border: 1px solid #88ff88;
+    opacity: 0.9;
+    cursor: default;
+}
+.miner-count {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    font-size: 0.8em;
+    color: #88ff88;
+}
+.tooltip {
+    visibility: hidden;
+    position: fixed;
+    bottom: auto;
+    top: 0;
+    left: 0;
+    transform: translate(-50%, -100%);
+    background-color: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 8px;
+    border-radius: 4px;
+    width: max-content;
+    font-size: 14px;
+    margin-bottom: 5px;
+    white-space: nowrap;
+    z-index: 100;
+    border: 1px solid #666;
+    pointer-events: none;
+}
+.shop-item:hover .tooltip {
+    visibility: visible;
+}
+#loadingScreen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: calc(16px + 1vw);
+    z-index: 10;
+}
+#loadingBar {
+    width: 80%;
+    height: 20px;
+    background-color: #333;
+    margin-top: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+#loadingProgress {
+    height: 100%;
+    width: 0%;
+    background-color: #4CAF50;
+    transition: width 0.3s;
+}
+@media (max-width: 768px) {
+    .ui-container {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .shop-container {
+        width: 100%;
+        right: 0;
+    }
+    .shop-items {
+        flex-direction: row;
+        justify-content: center;
+    }
+    .player-base-health {
+        width: 200px;
+    }
+}
+.mines-container {
+    position: absolute;
+    display: flex;
+    gap: 8px;
+    flex-wrap: nowrap;
+    justify-content: center;
+    width: auto;
+}
+.player-mines {
+    left: calc(15% + 20px);
+    top: calc(85% + 30px);
+}
+.enemy-mines {
+    right: calc(15% + 20px);
+    top: calc(15% + 30px);
+}
+.mine {
+    font-size: 20px;
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.5));
+    animation: bounce 1s infinite;
+    opacity: 0.9;
+}
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+}
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+    100% { transform: translateY(0px); }
+}
+.question-mark {
+    animation: float 2s ease-in-out infinite;
+    opacity: 0.7;
+}
+/* Add new styles for the battle timer */
+.battle-timer {
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.battle-timer.urgent {
+    color: #ff4444;
+    animation: pulseTimer 0.5s ease-in-out infinite;
+    text-shadow: 0 0 10px rgba(255, 68, 68, 0.7);
+}
+.battle-timer .win-bonus {
+    color: #ffcc00;
+    font-size: 0.9em;
+    margin-top: 2px;
+}
+.battle-timer .timer-line {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+@keyframes pulseTimer {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+.stats-panel {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 2;
+}
+.base-health.player-base-health,
+.base-health.enemy-base-health {
+    position: static;
+    width: 250px;
+    margin: 0;
+    text-align: center;  /* Center the entire content */
+}
+.enemy-header {
+    color: #ff4444;
+    font-weight: bold;
+}
+@media (max-width: 768px) {
+    .stats-panel {
+        left: 0;
+        width: 100%;
+        align-items: center;
+    }
+    .base-health.player-base-health,
+    .base-health.enemy-base-health {
+        width: 200px;
+    }
+}
+.player-header {
+    color: #3399ff;
+    font-weight: bold;
+}
+.player-header, .enemy-header {
+    font-size: 1.2em;
+    margin-bottom: 5px;
+    display: block;
+    text-align: center;  /* Center the headers */
+}
+.player-header {
+    color: #3399ff;
+    font-weight: bold;
+}
+.enemy-header {
+    color: #ff4444;
+    font-weight: bold;
+}
+/* Add victory popup styles */
+.victory-popup {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%) scale(0.8);
+    background: rgba(0, 0, 0, 0.9);
+    padding: 15px;
+    border-radius: 8px;
+    color: white;
+    text-align: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    border: 1px solid #444;
+    max-width: 300px;
+    width: 80%;
+}
+.victory-popup.show {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+    pointer-events: auto;
+}
+.victory-popup h2 {
+    font-size: 1.5em;
+    margin-bottom: 8px;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
+.victory-popup.player-win h2 {
+    color: #33CC33;
+}
+.victory-popup.enemy-win h2 {
+    color: #FF4444;
+}
+.victory-popup .gold-awarded {
+    font-size: 1.2em;
+    color: #FFD700;
+    margin: 8px 0;
+    animation: pulse 1s infinite;
+}
+.victory-popup .streak {
+    font-size: 1em;
+    margin: 5px 0;
+    color: #FFA500;
+}
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+.tutorial-highlight {
+  position: absolute;
+  border: 4px solid #ff0;
+  border-radius: 12px;
+  box-shadow: 0 0 24px 6px rgba(255,255,0,0.4);
+  background: rgba(255,255,0,0.08);
+  pointer-events: none;
+  transition: all 0.3s;
+  z-index: 5;
+}
+.tutorial-label {
+  position: absolute;
+  min-width: 220px;
+  max-width: 340px;
+  background: rgba(0,0,0,0.92);
+  color: #fff;
+  padding: 18px 22px;
+  border-radius: 10px;
+  font-size: 1.15em;
+  font-family: 'MedievalSharp', Arial, sans-serif;
+  box-shadow: 0 2px 16px #000;
+  z-index: 6;
+  pointer-events: none;
+  transition: all 0.3s;
+}
+.tutorial-highlight.staging {
+  border-radius: 40% 40% 60% 60%/60% 60% 40% 40%;
+}
+#tutorialStepContainer button {
+  font-family: 'MedievalSharp', Arial, sans-serif;
+  font-size: 1.1em;
+}
+
+/* Start screen styles */
+#startScreen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(20,20,20,0.97);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+#startScreen > div {
+  background: rgba(0,0,0,0.8);
+  padding: 32px 40px;
+  border-radius: 12px;
+  box-shadow: 0 0 32px #000;
+  max-width: 420px;
+  text-align: center;
+}
+
+#startScreen h1 {
+  font-family: 'MedievalSharp',Arial,sans-serif;
+  font-size: 2.2em;
+  color: #fff;
+  margin-bottom: 0.5em;
+}
+
+#startScreen p {
+  color: #ccc;
+  font-size: 1.1em;
+  margin-bottom: 1.5em;
+}
+
+#startGameBtn {
+  font-size: 1.2em;
+  padding: 10px 32px;
+  margin-bottom: 1em;
+  border-radius: 6px;
+  background: #33cc33;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+#howToPlayBtn {
+  font-size: 1em;
+  padding: 7px 18px;
+  border-radius: 6px;
+  background: #3399ff;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+/* Tutorial overlay styles */
+#tutorialOverlay {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(10,10,30,0.97);
+  z-index: 30;
+  justify-content: center;
+  align-items: center;
+}
+
+#tutorialStepContainer {
+  position: relative;
+  max-width: 1100px;
+  width: 90vw;
+  margin: 0 auto;
+}
+
+#tutorialImage {
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 0 32px #000;
+}
+
+#closeTutorialBtn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 1.2em;
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  z-index: 10;
+}
+
+#tutorialStepContainer > div:last-child {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 16px;
+  z-index: 10;
+}
+
+#tutorialPrevBtn, #tutorialNextBtn {
+  font-size: 1.1em;
+  padding: 6px 18px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+#tutorialPrevBtn {
+  background: #3399ff;
+  color: #fff;
+}
+
+#tutorialNextBtn {
+  background: #33cc33;
+  color: #fff;
+} 

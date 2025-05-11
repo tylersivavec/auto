@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto-Battler</title>
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div id="startScreen" style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(20,20,20,0.97);z-index:20;display:flex;flex-direction:column;justify-content:center;align-items:center;">
+        <div style="background:rgba(0,0,0,0.8);padding:32px 40px;border-radius:12px;box-shadow:0 0 32px #000;max-width:420px;text-align:center;">
+            <h1 style="font-family:'MedievalSharp',Arial;color:#FFD700;text-shadow:0 2px 4px rgba(0,0,0,0.5);margin-bottom:24px;font-size:32px;">Auto-Battler</h1>
+            <p style="color:#CCC;margin-bottom:20px;font-size:16px;line-height:1.5;">Build your army and battle against the enemy. Protect your base and destroy theirs!</p>
+            <div style="display:flex;flex-direction:column;gap:12px;margin-top:30px;">
+                <button id="startGameBtn" style="background:#227744;color:white;border:none;padding:12px 20px;border-radius:4px;font-size:16px;cursor:pointer;transition:all 0.2s;font-weight:bold;">Start Game</button>
+                <button id="howToPlayBtn" style="background:#333;color:white;border:none;padding:12px 20px;border-radius:4px;font-size:16px;cursor:pointer;transition:all 0.2s;">How to Play</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="tutorialOverlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:30;display:none;justify-content:center;align-items:center;">
+        <div style="background:rgba(40,40,40,0.95);padding:20px 40px 30px;border-radius:8px;max-width:600px;position:relative;box-shadow:0 0 20px rgba(0,0,0,0.5);">
+            <h2 style="font-family:'MedievalSharp',Arial;color:#FFD700;text-align:center;margin-bottom:20px;">How to Play</h2>
+            <div style="color:#DDD;font-size:15px;line-height:1.5;max-height:400px;overflow-y:auto;padding-right:10px;">
+                <h3 style="color:#AAF;margin-top:20px;margin-bottom:10px;font-size:18px;">Game Overview</h3>
+                <p>This is an auto-battler game where you build an army to fight against the enemy. Every 45 seconds, a battle will occur between your army and the enemy's army.</p>
+                
+                <h3 style="color:#AAF;margin-top:20px;margin-bottom:10px;font-size:18px;">Economy</h3>
+                <p>You automatically earn gold over time which you can use to purchase units and upgrades.</p>
+                <ul style="padding-left:20px;margin-top:10px;">
+                    <li>Purchase miners to increase your gold income.</li>
+                    <li>Build vaults to increase your maximum gold capacity.</li>
+                    <li>Win battles to earn bonus gold.</li>
+                </ul>
+                
+                <h3 style="color:#AAF;margin-top:20px;margin-bottom:10px;font-size:18px;">Units</h3>
+                <p>There are four types of units you can purchase:</p>
+                <ul style="padding-left:20px;margin-top:10px;">
+                    <li><strong style="color:#FFD700">Warrior:</strong> Strong melee fighter with high health.</li>
+                    <li><strong style="color:#FFD700">Archer:</strong> Ranged unit that shoots arrows.</li>
+                    <li><strong style="color:#FFD700">Mage:</strong> Powerful magic attacker.</li>
+                    <li><strong style="color:#FFD700">Priestess:</strong> Heals nearby allies.</li>
+                </ul>
+                
+                <h3 style="color:#AAF;margin-top:20px;margin-bottom:10px;font-size:18px;">Battle Mechanics</h3>
+                <p>During battle:</p>
+                <ul style="padding-left:20px;margin-top:10px;">
+                    <li>Units automatically find and attack enemies.</li>
+                    <li>Win by destroying all enemy units and reaching their base.</li>
+                    <li>If both armies are defeated, the battle ends in a draw.</li>
+                    <li>Win streaks increase the gold bonus you receive for winning.</li>
+                </ul>
+                
+                <h3 style="color:#AAF;margin-top:20px;margin-bottom:10px;font-size:18px;">Unit Positioning</h3>
+                <p>You can drag units in your staging area to position them strategically. Units placed in the front will engage enemies first.</p>
+                
+                <h3 style="color:#AAF;margin-top:20px;margin-bottom:10px;font-size:18px;">Upgrades</h3>
+                <p>Purchase powerful upgrades to enhance your units:</p>
+                <ul style="padding-left:20px;margin-top:10px;">
+                    <li><strong style="color:#FFD700">Shadow Priest:</strong> Enhances priestesses with offensive capabilities.</li>
+                    <li><strong style="color:#FFD700">Arc Lightning:</strong> Mages can chain lightning to multiple enemies.</li>
+                    <li><strong style="color:#FFD700">Pillage:</strong> Warriors steal gold when attacking the enemy base.</li>
+                    <li><strong style="color:#FFD700">Poison Arrow:</strong> Archers apply poison that slows enemies.</li>
+                </ul>
+            </div>
+            <button id="closeTutorialBtn" style="background:#444;color:white;border:none;padding:8px 20px;border-radius:4px;margin-top:20px;cursor:pointer;display:block;margin:20px auto 0;">Close</button>
+        </div>
+    </div>
+
+    <div id="loadingScreen" style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(20,20,20,0.97);z-index:10;display:flex;flex-direction:column;justify-content:center;align-items:center;">
+        <h2 style="color:#FFD700;margin-bottom:20px;font-family:'MedievalSharp',Arial;">Loading Game...</h2>
+        <div style="width:250px;height:20px;background:#222;border-radius:10px;overflow:hidden;">
+            <div id="loadingProgress" style="width:0%;height:100%;background:linear-gradient(to right, #227744, #33CC66);transition:width 0.5s ease;"></div>
+        </div>
+    </div>
+
+    <div class="game-container">
+        <canvas id="gameCanvas"></canvas>
+        
+        <div class="ui-container">
+            <div class="stats-panel">
+                <div class="player-stats">
+                    <h3 class="player-header">Player Stats</h3>
+                    <div class="player-gold-container">
+                        <div class="gold-label">Gold:</div>
+                        <div class="gold-value">
+                            <span id="playerGold">100</span>/<span id="maxGold">500</span>
+                        </div>
+                    </div>
+                    <div class="gold-rate-container">
+                        <div class="rate-label">Income:</div>
+                        <div class="rate-value">+<span id="goldRate">5</span>/5s</div>
+                    </div>
+                    <div class="player-base-health">
+                        <div class="health-label">Base Health:</div>
+                        <div class="health-bar">
+                            <div id="playerHealthFill" class="health-fill"></div>
+                        </div>
+                        <div class="health-value" id="playerBaseHealth">1000</div>
+                        <div class="miners-display">
+                            <div class="miners-label">Miners:</div>
+                            <div class="miner-slots">
+                                <div class="miner-slot">
+                                    <div class="miner-icon"></div>
+                                    <div class="miner-rate"></div>
+                                </div>
+                                <div class="miner-slot">
+                                    <div class="miner-icon"></div>
+                                    <div class="miner-rate"></div>
+                                </div>
+                                <div class="miner-slot">
+                                    <div class="miner-icon"></div>
+                                    <div class="miner-rate"></div>
+                                </div>
+                            </div>
+                            <div class="vaults-label">Vaults:</div>
+                            <div class="vault-slots">
+                                <div class="vault-slot">
+                                    <div class="vault-icon"></div>
+                                </div>
+                                <div class="vault-slot">
+                                    <div class="vault-icon"></div>
+                                </div>
+                                <div class="vault-slot">
+                                    <div class="vault-icon"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="battle-timer">
+                    <div id="nextBattleTimer">
+                        <div class="timer-line">First Battle: 45s</div>
+                        <span class="win-bonus">75g win bonus</span>
+                    </div>
+                </div>
+
+                <div class="enemy-stats">
+                    <h3 class="enemy-header">Enemy Stats</h3>
+                    <div class="enemy-gold-container">
+                        <div class="gold-label">Gold:</div>
+                        <div class="gold-value">
+                            <span id="enemyGold">100</span>/<span id="enemyMaxGold">500</span>
+                        </div>
+                    </div>
+                    <div class="gold-rate-container">
+                        <div class="rate-label">Income:</div>
+                        <div class="rate-value">+<span id="enemyGoldRate">5</span>/5s</div>
+                    </div>
+                    <div class="enemy-base-health">
+                        <div class="health-label">Base Health:</div>
+                        <div class="health-bar">
+                            <div id="enemyHealthFill" class="health-fill"></div>
+                        </div>
+                        <div class="health-value" id="enemyBaseHealth">1000</div>
+                        <div class="miners-display">
+                            <div class="miners-label">Miners:</div>
+                            <div class="miner-slots">
+                                <div class="miner-slot">
+                                    <div class="miner-icon"></div>
+                                    <div class="miner-rate"></div>
+                                </div>
+                                <div class="miner-slot">
+                                    <div class="miner-icon"></div>
+                                    <div class="miner-rate"></div>
+                                </div>
+                                <div class="miner-slot">
+                                    <div class="miner-icon"></div>
+                                    <div class="miner-rate"></div>
+                                </div>
+                            </div>
+                            <div class="vaults-label">Vaults:</div>
+                            <div class="vault-slots">
+                                <div class="vault-slot">
+                                    <div class="vault-icon"></div>
+                                </div>
+                                <div class="vault-slot">
+                                    <div class="vault-icon"></div>
+                                </div>
+                                <div class="vault-slot">
+                                    <div class="vault-icon"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="shop-container">
+                <div class="shop-section">
+                    <div class="shop-section-title">Economy</div>
+                    <div class="shop-items">
+                        <div class="shop-item" onclick="buyUnit('miner')">
+                            <div class="item-image">⛏️</div>
+                            <div class="item-name">Miner</div>
+                            <div class="item-cost">50g</div>
+                            <div class="tooltip">
+                                <div class="tooltip-title">Miner</div>
+                                <div class="tooltip-desc">Increases gold generation</div>
+                                <div class="tooltip-stats">
+                                    <div class="stat">+10 gold per 5s</div>
+                                    <div class="stat">Maximum: 3 miners</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="shop-item" onclick="buyUnit('vault')">
+                            <div class="item-image">💎</div>
+                            <div class="item-name">Vault</div>
+                            <div class="item-cost">100g</div>
+                            <div class="tooltip">
+                                <div class="tooltip-title">Vault</div>
+                                <div class="tooltip-desc">Increases maximum gold</div>
+                                <div class="tooltip-stats">
+                                    <div class="stat">+250 maximum gold</div>
+                                    <div class="stat">Maximum: 3 vaults</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="shop-section">
+                    <div class="shop-section-title">Units</div>
+                    <div class="shop-items">
+                        <div class="shop-item" onclick="buyUnit('warrior')">
+                            <div class="item-image">⚔️</div>
+                            <div class="item-name">Warrior</div>
+                            <div class="item-cost">50g</div>
+                            <div class="tooltip">
+                                <div class="tooltip-title">Warrior</div>
+                                <div class="tooltip-desc">Strong melee fighter</div>
+                                <div class="tooltip-stats">
+                                    <div class="stat">Health: 200</div>
+                                    <div class="stat">Damage: 35</div>
+                                    <div class="stat">Melee unit</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="shop-item" onclick="buyUnit('archer')">
+                            <div class="item-image">🏹</div>
+                            <div class="item-name">Archer</div>
+                            <div class="item-cost">75g</div>
+                            <div class="tooltip">
+                                <div class="tooltip-title">Archer</div>
+                                <div class="tooltip-desc">Ranged attacker</div>
+                                <div class="tooltip-stats">
+                                    <div class="stat">Health: 100</div>
+                                    <div class="stat">Damage: 25</div>
+                                    <div class="stat">Range: 200</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="shop-item" onclick="buyUnit('mage')">
+                            <div class="item-image">🔮</div>
+                            <div class="item-name">Mage</div>
+                            <div class="item-cost">100g</div>
+                            <div class="tooltip">
+                                <div class="tooltip-title">Mage</div>
+                                <div class="tooltip-desc">Powerful magic attacker</div>
+                                <div class="tooltip-stats">
+                                    <div class="stat">Health: 80</div>
+                                    <div class="stat">Damage: 45</div>
+                                    <div class="stat">Range: 180</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="shop-item" onclick="buyUnit('priestess')">
+                            <div class="item-image">✨</div>
+                            <div class="item-name">Priestess</div>
+                            <div class="item-cost">125g</div>
+                            <div class="tooltip">
+                                <div class="tooltip-title">Priestess</div>
+                                <div class="tooltip-desc">Heals nearby allies</div>
+                                <div class="tooltip-stats">
+                                    <div class="stat">Health: 90</div>
+                                    <div class="stat">Healing: 15 per 3s</div>
+                                    <div class="stat">Heal Range: 150</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="shop-section">
+                    <div class="shop-section-title">Upgrades</div>
+                    <div class="shop-items">
+                        <div class="shop-item" onclick="buyUpgrade('shadowPriest')">
+                            <div class="item-image">💀</div>
+                            <div class="item-name">Shadow Priest</div>
+                            <div class="item-cost">150g</div>
+                            <div class="tooltip">
+                                <div class="tooltip-title">Shadow Priest</div>
+                                <div class="tooltip-desc">Enhances priestess abilities</div>
+                                <div class="tooltip-stats">
+                                    <div class="stat">+20 damage</div>
+                                    <div class="stat">+15 healing</div>
+                                    <div class="stat">One-time upgrade</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="shop-item" onclick="buyUpgrade('arcLightning')">
+                            <div class="item-image">⚡</div>
+                            <div class="item-name">Arc Lightning</div>
+                            <div class="item-cost">200g</div>
+                            <div class="tooltip">
+                                <div class="tooltip-title">Arc Lightning</div>
+                                <div class="tooltip-desc">Mage lightning chains to nearby enemies</div>
+                                <div class="tooltip-stats">
+                                    <div class="stat">Chains to 2-3 enemies</div>
+                                    <div class="stat">50% damage to additional targets</div>
+                                    <div class="stat">One-time upgrade</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="shop-item" onclick="buyUpgrade('pillage')">
+                            <div class="item-image">💰</div>
+                            <div class="item-name">Pillage</div>
+                            <div class="item-cost">175g</div>
+                            <div class="tooltip">
+                                <div class="tooltip-title">Pillage</div>
+                                <div class="tooltip-desc">Warriors steal gold when attacking enemy base</div>
+                                <div class="tooltip-stats">
+                                    <div class="stat">Steals 2 gold per hit</div>
+                                    <div class="stat">One-time upgrade</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="shop-item" onclick="buyUpgrade('poisonArrow')">
+                            <div class="item-image">🧪</div>
+                            <div class="item-name">Poison Arrow</div>
+                            <div class="item-cost">150g</div>
+                            <div class="tooltip">
+                                <div class="tooltip-title">Poison Arrow</div>
+                                <div class="tooltip-desc">Archer attacks apply poison</div>
+                                <div class="tooltip-stats">
+                                    <div class="stat">Slows enemy attack by 50%</div>
+                                    <div class="stat">Slows enemy movement by 50%</div>
+                                    <div class="stat">One-time upgrade</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="victory-popup">
+            <h2>Victory!</h2>
+            <div class="gold">
+                <span id="goldPrefix">+</span><span id="victoryGold">0</span><span id="goldSuffix"> gold</span>
+            </div>
+            <div class="streak">
+                <span id="streakLabel">Player Win Streak</span>: <span id="victoryStreak">0</span>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { buyUnit, buyUpgrade, initGame } from './js/main.js';
+        
+        // Make functions available globally
+        window.buyUnit = buyUnit;
+        window.buyUpgrade = buyUpgrade;
+        
+        // Initialize event listeners after DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            // Start screen interactions are set up in main.js
+            console.log("DOM loaded");
+        });
+    </script>
+</body>
+</html> 
