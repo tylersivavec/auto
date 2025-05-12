@@ -325,9 +325,9 @@ function drawStagingAreas(ctx, gameAreas, playerStagingArea, enemyStagingArea, b
                         ctx.fillStyle = '#22AA22';
                         for (let i = 0; i < 5; i++) {
                             const angle = Math.random() * Math.PI * 2;
-                            const distance = 5 + Math.random() * 10;
-                            const particleX = pos.x + Math.cos(angle) * distance;
-                            const particleY = pos.y + Math.sin(angle) * distance;
+                            const particleDistance = 5 + Math.random() * 10;
+                            const particleX = pos.x + Math.cos(angle) * particleDistance;
+                            const particleY = pos.y + Math.sin(angle) * particleDistance;
                             ctx.beginPath();
                             ctx.arc(particleX, particleY, 2 + Math.random() * 2, 0, Math.PI * 2);
                             ctx.fill();
@@ -486,9 +486,9 @@ function drawUnits(ctx, activeUnits, upgradesState) {
                 ctx.fillStyle = '#22AA22';
                 for (let i = 0; i < 5; i++) {
                     const angle = Math.random() * Math.PI * 2;
-                    const distance = 10 + Math.random() * 10;
-                    const particleX = Math.cos(angle) * distance;
-                    const particleY = Math.sin(angle) * distance;
+                    const effectDistance = 10 + Math.random() * 10;
+                    const particleX = Math.cos(angle) * effectDistance;
+                    const particleY = Math.sin(angle) * effectDistance;
                     ctx.beginPath();
                     ctx.arc(unit.x + particleX, unit.y + particleY, 2 + Math.random() * 2, 0, Math.PI * 2);
                     ctx.fill();

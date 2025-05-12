@@ -228,10 +228,10 @@ class PoisonEffectParticle {
         // Create multiple poison particles in a cloud
         for (let i = 0; i < 10; i++) {
             const angle = Math.random() * Math.PI * 2;
-            const distance = 5 + Math.random() * 15;
+            const particleSpread = 5 + Math.random() * 15;
             this.particles.push({
-                x: Math.cos(angle) * distance,
-                y: Math.sin(angle) * distance,
+                x: Math.cos(angle) * particleSpread,
+                y: Math.sin(angle) * particleSpread,
                 size: 2 + Math.random() * 3,
                 speed: 0.3 + Math.random() * 0.3,
                 angle: angle,

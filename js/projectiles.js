@@ -257,9 +257,9 @@ function drawProjectiles(ctx) {
             ctx.fillStyle = '#22AA22';
             for (let i = 0; i < 3; i++) {
                 const angle = Math.random() * Math.PI * 2;
-                const distance = 5 + Math.random() * 8;
-                const particleX = Math.cos(angle) * distance;
-                const particleY = Math.sin(angle) * distance;
+                const spreadDistance = 5 + Math.random() * 8;
+                const particleX = Math.cos(angle) * spreadDistance;
+                const particleY = Math.sin(angle) * spreadDistance;
                 ctx.beginPath();
                 ctx.arc(particleX, particleY, 2 + Math.random() * 2, 0, Math.PI * 2);
                 ctx.fill();

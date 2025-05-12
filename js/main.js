@@ -597,9 +597,9 @@ function buyUnit(unitType) {
                 for (const existingUnit of gameState.playerStagingArea) {
                     const dx = existingUnit.position.x - newPosition.x;
                     const dy = existingUnit.position.y - newPosition.y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const dist = distance({ x: dx, y: dy }, { x: 0, y: 0 });
                     
-                    if (distance < MIN_DISTANCE) {
+                    if (dist < MIN_DISTANCE) {
                         validPosition = false;
                         break;
                     }
@@ -973,64 +973,49 @@ function updateUI() {
     for (let i = 0; i < gameState.playerMiners; i++) {
         playerMinerGold += MINER_GOLD_RATES[i];
     }
-    
     let enemyMinerGold = 0;
     for (let i = 0; i < gameState.enemyMiners; i++) {
         enemyMinerGold += MINER_GOLD_RATES[i];
     }
-    
-    goldRateElem.textContent = BASE_GOLD_RATE + playerMinerGold;
-    enemyGoldRateElem.textContent = BASE_GOLD_RATE + enemyMinerGold;
-    
+    goldRateElem.textContent = `+${BASE_GOLD_RATE + playerMinerGold} gold/sec`;
+    enemyGoldRateElem.textContent = `+${BASE_GOLD_RATE + enemyMinerGold} gold/sec`;
     // Update battle timer with urgent styling and win bonus
     const battleTime = Math.ceil(gameState.battleTimer);
     const prefixText = gameState.firstBattleOccurred ? "Next Battle" : "First Battle";
-    
     nextBattleTimerElem.innerHTML = `
         <div class="timer-line">
             ${prefixText}: ${battleTime}s
         </div>
         <span class="win-bonus">${gameState.nextBattleWinBonus}g win bonus</span>
     `;
-    
-    // Add urgent class for last 5 seconds
     if (battleTime <= 5) {
         nextBattleTimerElem.classList.add('urgent');
     } else {
         nextBattleTimerElem.classList.remove('urgent');
     }
-    
     playerBaseHealthElem.textContent = Math.max(0, Math.round(gameState.playerBaseHealth));
     enemyBaseHealthElem.textContent = Math.max(0, Math.round(gameState.enemyBaseHealth));
-    
-    // Update health bar fills
     const playerHealthPercent = (gameState.playerBaseHealth / 1000) * 100;
     const enemyHealthPercent = (gameState.enemyBaseHealth / 1000) * 100;
     document.getElementById('playerHealthFill').style.width = `${Math.max(0, Math.min(100, playerHealthPercent))}%`;
     document.getElementById('enemyHealthFill').style.width = `${Math.max(0, Math.min(100, enemyHealthPercent))}%`;
-    
-    // Change health bar colors based on health percentage
     document.getElementById('playerHealthFill').style.backgroundColor = 
         playerHealthPercent > 60 ? '#33CC33' : 
         playerHealthPercent > 30 ? '#FFCC00' : '#CC3333';
-    
     document.getElementById('enemyHealthFill').style.backgroundColor = 
         enemyHealthPercent > 60 ? '#33CC33' : 
         enemyHealthPercent > 30 ? '#FFCC00' : '#CC3333';
-
     // Update win streaks in the stats panel with dynamic colors
     const playerStreakElem = document.querySelector('.player-header');
     const enemyStreakElem = document.querySelector('.enemy-header');
-    
     function getStreakColor(streak) {
-        if (streak === 0) return '#FFFFFF';  // White for 0
-        if (streak === 1) return '#FFCC00';  // Gold for 1
-        if (streak === 2) return '#FF9900';  // Orange for 2
-        if (streak === 3) return '#FF6600';  // Dark Orange for 3
-        if (streak === 4) return '#FF3300';  // Red-Orange for 4
-        return '#FF0000';  // Red for 5+
+        if (streak === 0) return '#FFFFFF';
+        if (streak === 1) return '#FFCC00';
+        if (streak === 2) return '#FF9900';
+        if (streak === 3) return '#FF6600';
+        if (streak === 4) return '#FF3300';
+        return '#FF0000';
     }
-    
     if (playerStreakElem) {
         const streakColor = getStreakColor(gameState.playerWinStreak);
         playerStreakElem.innerHTML = `Player Stats<span style="color: ${streakColor}; font-size: 0.9em; font-weight: normal;"><br>Win Streak: ${gameState.playerWinStreak}</span>`;
@@ -1039,6 +1024,27 @@ function updateUI() {
         const streakColor = getStreakColor(gameState.enemyWinStreak);
         enemyStreakElem.innerHTML = `Enemy Stats<span style="color: ${streakColor}; font-size: 0.9em; font-weight: normal;"><br>Win Streak: ${gameState.enemyWinStreak}</span>`;
     }
+    // Update miners/vaults display (only update content, not structure)
+    document.querySelectorAll('.player-base-health .miners-display .miner-slot').forEach((slot, idx) => {
+        const icon = slot.querySelector('.miner-icon');
+        const rate = slot.querySelector('.miner-rate');
+        if (icon) icon.textContent = idx < gameState.playerMiners ? '⛏️' : '';
+        if (rate) rate.textContent = idx < gameState.playerMiners ? `+${MINER_GOLD_RATES[idx]}` : '';
+    });
+    document.querySelectorAll('.player-base-health .miners-display .vault-slot').forEach((slot, idx) => {
+        const icon = slot.querySelector('.vault-icon');
+        if (icon) icon.textContent = idx < gameState.playerVaults ? '💎' : '';
+    });
+    document.querySelectorAll('.enemy-base-health .miners-display .miner-slot').forEach((slot, idx) => {
+        const icon = slot.querySelector('.miner-icon');
+        const rate = slot.querySelector('.miner-rate');
+        if (icon) icon.textContent = idx < gameState.enemyMiners ? '⛏️' : '';
+        if (rate) rate.textContent = idx < gameState.enemyMiners ? `+${MINER_GOLD_RATES[idx]}` : '';
+    });
+    document.querySelectorAll('.enemy-base-health .miners-display .vault-slot').forEach((slot, idx) => {
+        const icon = slot.querySelector('.vault-icon');
+        if (icon) icon.textContent = idx < gameState.enemyVaults ? '��' : '';
+    });
 }
 
 // Add animation update function
@@ -1073,7 +1079,7 @@ function handleMouseDown(e) {
         const clickedUnit = gameState.playerStagingArea.find(unit => {
             if (!unit || !unit.position) return false;
             const pos = fromIsoCoords(unit.position.x, unit.position.y, true);
-            const dist = Math.sqrt(Math.pow(x - pos.x, 2) + Math.pow(y - pos.y, 2));
+            const dist = distance({ x: x - pos.x, y: y - pos.y }, { x: 0, y: 0 });
             return dist < 30; // Increased hit radius for better detection
         });
 
@@ -1257,11 +1263,9 @@ function initEventListeners() {
     howToPlayBtn.addEventListener('click', () => {
         tutorialOverlay.style.display = 'flex';
     });
-    
     closeTutorialBtn.addEventListener('click', () => {
         tutorialOverlay.style.display = 'none';
     });
-    
     // Start game button logic
     startGameBtn.addEventListener('click', () => {
         startScreen.style.display = 'none';
@@ -1272,6 +1276,9 @@ function initEventListeners() {
         // Actually start the game loading process
         initGame();
     });
+    // Prevent game from auto-initializing before start
+    // Do not call initGame() here; wait for Start Game button
+    // Do not add mouse event listeners here
 }
 
 // Call this when the DOM is loaded

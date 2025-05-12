@@ -63,27 +63,27 @@ function avoidCollisions(unit, targetX, targetY, deltaTime, activeUnits) {
     for (const otherUnit of activeUnits) {
         if (otherUnit === unit) continue;
         
-        const dx = unit.x - otherUnit.x;
-        const dy = unit.y - otherUnit.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
+        const dist = distance(unit, otherUnit);
         
-        if (distance < MINIMUM_SPACING) {
+        if (dist < MINIMUM_SPACING) {
             // Calculate repulsion force
-            const force = (MINIMUM_SPACING - distance) / MINIMUM_SPACING;
-            avoidanceX += (dx / distance) * force;
-            avoidanceY += (dy / distance) * force;
+            const force = (MINIMUM_SPACING - dist) / MINIMUM_SPACING;
+            const dx = unit.x - otherUnit.x;
+            const dy = unit.y - otherUnit.y;
+            avoidanceX += (dx / dist) * force;
+            avoidanceY += (dy / dist) * force;
         }
     }
     
     // Calculate movement towards target
-    const dx = targetX - unit.x;
-    const dy = targetY - unit.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
+    const dist = distance(unit, { x: targetX, y: targetY });
     
-    if (distance > 0) {
+    if (dist > 0) {
         const speed = (unit.moveSpeed * 100) * (canvas.width / 800) * deltaTime;
-        const moveX = (dx / distance) * speed;
-        const moveY = (dy / distance) * speed;
+        const dx = targetX - unit.x;
+        const dy = targetY - unit.y;
+        const moveX = (dx / dist) * speed;
+        const moveY = (dy / dist) * speed;
         
         // Combine target movement with collision avoidance
         const finalX = moveX + avoidanceX * speed;
@@ -176,17 +176,11 @@ function createUnit(type, isPlayer, position = null) {
     return unit;
 }
 
-// Calculate distance between two points
-function distance(a, b) {
-    return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
-}
-
 // Export functions
 export {
     calculateDamage,
     findTarget,
     moveTowards,
     avoidCollisions,
-    createUnit,
-    distance
+    createUnit
 }; 
